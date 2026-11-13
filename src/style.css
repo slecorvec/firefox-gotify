@@ -1,0 +1,20 @@
+:root { color-scheme: light dark; --accent: #3b7dd8; --muted: #888; }
+body { font: 13px system-ui, sans-serif; margin: 0; }
+
+.popup { width: 380px; max-height: 560px; }
+.popup header { display: flex; justify-content: space-between; padding: 8px 12px;
+                border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent); }
+.popup header a { color: var(--accent); }
+#status { padding: 0 12px; color: var(--muted); }
+#status:empty { display: none; }
+ul { list-style: none; margin: 0; padding: 0; }
+li { padding: 8px 12px; border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent); }
+li.unread { border-left: 3px solid var(--accent); padding-left: 9px;
+            background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.head { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; }
+.title { font-weight: 600; margin-top: 2px; }
+.body { white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 2px; }
+
+.options form { display: grid; gap: 10px; padding: 12px; max-width: 420px; }
+.options label { display: grid; gap: 4px; }
+.options .hint { color: var(--muted); margin: 0; }

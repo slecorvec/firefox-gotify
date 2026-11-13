@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="options">
+  <form id="form">
+    <label>Server URL
+      <input id="url" type="url" placeholder="https://gotify.example.com" required>
+    </label>
+    <label>Client token
+      <input id="token" type="password" autocomplete="off" required>
+    </label>
+    <p class="hint">Create a client in the Gotify web UI (Clients → Create client) and paste its token.</p>
+    <button type="submit">Save and test</button>
+    <p id="status" role="status"></p>
+  </form>
+  <script src="gotify.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
