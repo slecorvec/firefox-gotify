@@ -1,0 +1,18 @@
+# End-to-end test: a throwaway Gotify server + headless Firefox ESR driving the
+# extension through geckodriver. Same command locally and in CI:
+#   docker compose -f test/e2e/compose.yml up --build --abort-on-container-exit --exit-code-from e2e
+name: firefox-gotify-e2e
+services:
+  gotify:
+    image: gotify/server:3.1.1
+    environment:
+      GOTIFY_DEFAULTUSER_PASS: e2e-admin # throwaway test server, never exposed
+  e2e:
+    build:
+      context: ../..
+      dockerfile: test/e2e/Dockerfile
+    depends_on: [gotify]
+    environment:
+      GOTIFY_URL: http://gotify
+      GOTIFY_ADMIN_PASS: e2e-admin
+    shm_size: 512m # Firefox content processes

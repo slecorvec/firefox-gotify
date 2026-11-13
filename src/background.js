@@ -1,8 +1,7 @@
-// Polls Gotify every minute (alarms survive suspend and the event page being unloaded),
-// keeps the badge = messages newer than the last read one, notifies new messages.
+// Polls Gotify every <interval> minutes (alarms survive suspend and the event page being
+// unloaded), keeps the badge = messages newer than the last read one, notifies new messages.
 "use strict";
 
-const POLL_MINUTES = 1;
 const MAX_NOTIFICATIONS = 3; // per poll; more → one summary notification
 
 function setBadge(text, color = "#d33", title = "Gotify") {
@@ -52,14 +51,24 @@ async function doPoll() {
   }
 }
 
+// Where a click on a message's notification leads: the message's own click URL
+// (extras client::notification.click.url) when it is http(s), else the Gotify web UI.
+// Kept in storage.session: the event page may be unloaded before the click.
+function clickUrl(m) {
+  const raw = m.extras?.["client::notification"]?.click?.url;
+  return typeof raw === "string" ? safeHttpUrl(raw) : null;
+}
+
 function notify(fresh) {
   const shown = fresh.length > MAX_NOTIFICATIONS ? [] : fresh;
+  const targets = Object.fromEntries(shown.map((m) => [`gotify-${m.id}`, clickUrl(m)]).filter(([, u]) => u));
+  if (Object.keys(targets).length) browser.storage.session.set(targets);
   for (const m of shown) {
     browser.notifications.create(`gotify-${m.id}`, {
       type: "basic",
       iconUrl: "icons/bell-96.png",
       title: m.title || "Gotify",
-      message: m.message.slice(0, 500),
+      message: String(m.message ?? "").slice(0, 500),
     });
   }
   if (!shown.length) {
@@ -73,24 +82,30 @@ function notify(fresh) {
 }
 
 browser.notifications.onClicked.addListener(async (id) => {
+  const { [id]: target } = await browser.storage.session.get(id); // before clear(): onClosed drops it
   browser.notifications.clear(id);
   const { url } = await getConfig();
-  if (url) browser.tabs.create({ url });
+  const open = target || url;
+  if (open) browser.tabs.create({ url: open });
 });
+browser.notifications.onClosed.addListener((id) => browser.storage.session.remove(id));
 
 browser.runtime.onMessage.addListener(async (msg) => {
   if (msg?.type === "markRead") {
     const { lastReadId = 0, lastNotifiedId = 0 } = await browser.storage.local.get(["lastReadId", "lastNotifiedId"]);
     await browser.storage.local.set({ lastReadId: Math.max(lastReadId, msg.id), lastNotifiedId: Math.max(lastNotifiedId, msg.id) });
   }
+  if (msg?.type === "settings") return schedule();
   if (msg?.type === "markRead" || msg?.type === "poll") await poll();
 });
 
-function schedule() {
-  browser.alarms.create("poll", { periodInMinutes: POLL_MINUTES, delayInMinutes: POLL_MINUTES });
-  poll();
+async function schedule() {
+  const { interval } = await getConfig();
+  // create() replaces the alarm of the same name: a new interval takes effect at once
+  browser.alarms.create("poll", { periodInMinutes: interval, delayInMinutes: interval });
+  await poll();
 }
-browser.alarms.onAlarm.addListener((a) => { if (a.name === "poll") poll(); });
+browser.alarms.onAlarm.addListener((a) => (a.name === "poll" ? poll() : undefined));
 browser.runtime.onStartup.addListener(schedule);
 browser.runtime.onInstalled.addListener(schedule);
 // Re-enabling the add-on fires neither event and its alarms are gone: re-arm here.

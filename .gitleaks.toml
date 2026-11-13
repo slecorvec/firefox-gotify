@@ -1,0 +1,7 @@
+# gitleaks: default rules; the e2e test's throwaway Gotify admin password is not a secret.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "throwaway e2e test credentials"
+regexes = ['''e2e-admin''']

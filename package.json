@@ -1,0 +1,16 @@
+{
+  "name": "firefox-gotify",
+  "private": true,
+  "description": "Development tooling only: the extension itself (src/) has no dependency and no build step.",
+  "license": "0BSD",
+  "type": "module",
+  "scripts": {
+    "lint:ext": "web-ext lint --source-dir src",
+    "test:e2e": "node --test --test-concurrency=1 'test/e2e/*.test.mjs'",
+    "build": "web-ext build --source-dir src --artifacts-dir dist --overwrite-dest"
+  },
+  "devDependencies": {
+    "selenium-webdriver": "4.52.0",
+    "web-ext": "10.8.0"
+  }
+}

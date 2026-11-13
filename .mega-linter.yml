@@ -1,0 +1,20 @@
+# MegaLinter (javascript flavor) — https://megalinter.io
+# Deterministic set: only the linters below run, whatever the flavor adds later.
+ENABLE_LINTERS:
+  - JAVASCRIPT_ES
+  - JSON_JSONLINT
+  - CSS_STYLELINT
+  - HTML_HTMLHINT
+  - MARKDOWN_MARKDOWNLINT
+  - YAML_YAMLLINT
+  - ACTION_ACTIONLINT
+  - DOCKERFILE_HADOLINT
+  - REPOSITORY_SECRETLINT
+  - REPOSITORY_TRIVY
+VALIDATE_ALL_CODEBASE: true
+APPLY_FIXES: none
+SHOW_ELAPSED_TIME: true
+FILEIO_REPORTER: false
+PRINT_ALPACA: false
+JAVASCRIPT_ES_CONFIG_FILE: eslint.config.mjs
+FILTER_REGEX_EXCLUDE: (node_modules/|package-lock\.json|megalinter-reports/)

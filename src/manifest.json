@@ -1,13 +1,16 @@
 {
   "manifest_version": 3,
   "name": "Gotify Unread",
-  "version": "0.1.0",
-  "description": "Gotify notifications and an unread badge counting every message since you last read them, including those sent while Firefox was closed.",
+  "version": "0.2.0",
+  "description": "Gotify notifications, clickable links, a per-application filter and an unread badge counting every message since you last read them.",
   "icons": { "48": "icons/bell.svg", "96": "icons/bell.svg" },
   "permissions": ["alarms", "notifications", "storage"],
   "optional_host_permissions": ["http://*/*", "https://*/*"],
   "background": { "scripts": ["gotify.js", "background.js"] },
   "action": { "default_icon": "icons/bell.svg", "default_title": "Gotify", "default_popup": "popup.html" },
+  "content_security_policy": {
+    "extension_pages": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src http: https:; form-action 'none'; frame-ancestors 'none'; base-uri 'none'"
+  },
   "options_ui": { "page": "options.html", "open_in_tab": false },
   "browser_specific_settings": {
     "gecko": {
