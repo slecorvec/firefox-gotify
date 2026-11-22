@@ -9,7 +9,3 @@ Issues and pull requests are welcome.
   [`test/e2e/extension.test.mjs`](test/e2e/extension.test.mjs).
 - Run the end-to-end test before opening a pull request (command in the README); CI
   runs it again with MegaLinter and gitleaks.
-
-Note: the canonical repository is hosted elsewhere and mirrored here. Accepted pull
-requests are re-applied there and come back through the mirror, so your PR is closed
-rather than merged; you are credited with a `Co-authored-by:` trailer.
