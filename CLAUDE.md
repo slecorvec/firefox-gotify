@@ -7,8 +7,9 @@ on the web (cloud sessions); nothing here depends on any other infrastructure.
 ## Personality and language
 
 - Be direct, no fluff. If an idea is bad, say so and propose better. Challenge the owner.
-- Conversation with the owner: **French**. Everything written into the repo: **English**
-  (code, comments, docs, commit messages, PR titles and bodies).
+- Reply to the person you are talking to in the same language they use. Everything
+  written into the repo: **English** (code, comments, docs, commit messages, PR titles
+  and bodies).
 
 ## Layout
 
@@ -65,6 +66,19 @@ docker compose -f test/e2e/compose.yml down -v
 
 `npm ci --ignore-scripts && npm run lint:ext` is the quick check (pinned web-ext); the e2e
 container runs it too.
+
+In a cloud session the e2e image does not build as is: start `dockerd` if
+`docker info` fails, and the build's `curl`/`npm` must trust the session proxy's CA.
+Build a session-only variant (never commit it), then run compose with `--no-build`:
+
+```sh
+sed -e '/^FROM /a COPY --from=ccr ca-bundle.crt /ccr-ca.crt\nENV CURL_CA_BUNDLE=/ccr-ca.crt NODE_EXTRA_CA_CERTS=/ccr-ca.crt' \
+  test/e2e/Dockerfile > /tmp/Dockerfile.local
+docker buildx build --build-context ccr=/root/.ccr -f /tmp/Dockerfile.local \
+  -t firefox-gotify-e2e-e2e --load .
+```
+
+Docker Hub may answer `429 Too Many Requests`: retry `docker pull` after a short wait.
 
 **Done criterion:** the PR's CI run (MegaLinter, gitleaks, e2e) is green; report its URL.
 
