@@ -1,3 +1,10 @@
+<!-- markdownlint-disable-next-line MD041 -->
+> [!WARNING]
+>
+> ## 🚧 WORK IN PROGRESS (WIP) 🚧
+>
+> Not released yet: features, options and stored data may still change without notice.
+
 # Gotify Unread — Firefox extension
 
 [![CI](https://github.com/slecorvec/firefox-gotify/actions/workflows/ci.yml/badge.svg)](https://github.com/slecorvec/firefox-gotify/actions/workflows/ci.yml)
