@@ -92,10 +92,15 @@ Reporting a vulnerability: see [SECURITY.md](SECURITY.md).
 The extension is plain JavaScript (Manifest V3, Firefox ≥ 140) with no build step.
 
 ```sh
-# web-ext lint + end-to-end test: Gotify server + headless Firefox ESR, in Docker
+# web-ext lint, property tests, end-to-end test: Gotify server + headless Firefox ESR, in Docker
 docker compose -f test/e2e/compose.yml up --build --abort-on-container-exit --exit-code-from e2e
 docker compose -f test/e2e/compose.yml down -v
 ```
+
+The property-based tests ([fast-check](https://fast-check.dev)) also run alone, in about
+a second: `npm ci --ignore-scripts && npm run test:unit`. They feed thousands of
+generated messages, URLs and extras to the code that turns server data into links and
+requests.
 
 CI ([`.github/workflows/`](.github/workflows/)) runs on every push to master and every
 pull request:
