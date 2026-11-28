@@ -103,6 +103,10 @@ on the full history, and the end-to-end test. Actions are pinned by commit SHA;
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [CHANGELOG.md](CHANGELOG.md).
 
+Dependencies (development tools and test images only) are updated by Dependabot every
+week. Minor and patch updates of npm packages and Docker images merge by themselves
+once CI is green; GitHub Actions and major updates wait for a review.
+
 ## License
 
 [0BSD](LICENSE) — do whatever you want with it.
