@@ -23,4 +23,4 @@ COPY test ./test
 USER 1000:1000
 # One-shot test runner, not a service: nothing to health-check (Trivy DS-0026).
 HEALTHCHECK NONE
-CMD ["sh", "-c", "npm run --silent lint:ext && npm run --silent test:e2e"]
+CMD ["sh", "-c", "npm run --silent lint:ext && npm run --silent test:unit && npm run --silent test:e2e"]

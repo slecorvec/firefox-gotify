@@ -7,7 +7,7 @@ const shared = Object.fromEntries([
   "getConfig", "originPattern", "api", "allowDeletes", "messagesAfter", "latestId", "clampInterval", "safeHttpUrl", "appImageUrl", "bigImageUrl", "imageSrc", "linkify",
 ].map((g) => [g, "readonly"]));
 const nodeGlobals = Object.fromEntries([
-  "process", "Buffer", "console", "fetch", "setTimeout", "URL",
+  "process", "Buffer", "console", "fetch", "setTimeout", "URL", "performance",
 ].map((g) => [g, "readonly"]));
 
 const rules = {

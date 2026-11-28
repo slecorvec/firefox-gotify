@@ -18,6 +18,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follo
 - End-to-end test (real Gotify server, headless Firefox ESR), CI (MegaLinter, gitleaks),
   OpenSSF Scorecard.
 
+### Security
+
+- Fixes from the [security review](docs/security-review.md): link detection made
+  linear (a crafted message could freeze the popup), title and body length limits,
+  URLs with credentials never turned into links, links bidi-isolated, image downloads
+  capped, notification state updates serialised.
+
 ### Changed
 
 - The extension's description says it is an unofficial Gotify client.
