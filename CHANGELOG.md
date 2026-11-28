@@ -18,6 +18,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follo
 - End-to-end test (real Gotify server, headless Firefox ESR), CI (MegaLinter, gitleaks),
   OpenSSF Scorecard.
 
+### Changed
+
+- The extension's description says it is an unofficial Gotify client.
+
 ## 0.1.0
 
 - First version: polling, unread badge, desktop notifications, popup.
