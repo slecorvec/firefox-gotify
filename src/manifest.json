@@ -2,12 +2,12 @@
   "manifest_version": 3,
   "name": "Gotify Unread",
   "version": "0.2.0",
-  "description": "Unofficial Gotify client: notifications, clickable links, a per-application filter and an unread badge since you last read.",
-  "icons": { "48": "icons/bell.svg", "96": "icons/bell.svg" },
+  "description": "Unofficial Gotify client: notifications, clickable links, a per-application filter and an unread badge since you last read. Logo: github.com/gotify/logo (CC BY 4.0).",
+  "icons": { "48": "icons/gotify.svg", "96": "icons/gotify.svg" },
   "permissions": ["alarms", "declarativeNetRequestWithHostAccess", "notifications", "storage"],
   "optional_host_permissions": ["http://*/*", "https://*/*"],
   "background": { "scripts": ["gotify.js", "background.js"] },
-  "action": { "default_icon": "icons/bell.svg", "default_title": "Gotify", "default_popup": "popup.html" },
+  "action": { "default_icon": "icons/gotify.svg", "default_title": "Gotify", "default_popup": "popup.html" },
   "content_security_policy": {
     "extension_pages": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: https:; connect-src http: https:; form-action 'none'; frame-ancestors 'none'; base-uri 'none'"
   },

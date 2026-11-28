@@ -6,7 +6,9 @@
 
 > [!NOTE]
 > Unofficial: this extension is not affiliated with, nor endorsed by, the
-> [Gotify](https://gotify.net) project.
+> [Gotify](https://gotify.net) project. Its icon is the Gotify logo, from
+> [github.com/gotify/logo](https://github.com/gotify/logo) (CC BY 4.0, see
+> [`src/icons/LICENSE.md`](src/icons/LICENSE.md)).
 
 Firefox extension for [Gotify](https://gotify.net): an unread badge counting every
 message received since you last opened it — including those sent while the browser was
@@ -105,4 +107,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
-[0BSD](LICENSE) — do whatever you want with it.
+[0BSD](LICENSE) — do whatever you want with it. Except the icon: the Gotify logo,
+[CC BY 4.0](src/icons/LICENSE.md).
