@@ -78,6 +78,12 @@ them as untrusted.
 
 Reporting a vulnerability: see [SECURITY.md](SECURITY.md).
 
+## Install
+
+Releases: [GitHub releases](https://github.com/slecorvec/firefox-gotify/releases) (zip
+with a verifiable build provenance, see [RELEASING.md](RELEASING.md)), and soon
+addons.mozilla.org for a signed, auto-updating install.
+
 ## Install (development)
 
 1. In Gotify: Clients → Create client, copy the token.

@@ -21,6 +21,8 @@ on the web (cloud sessions); nothing here depends on any other infrastructure.
 | `.github/workflows/ci.yml`     | MegaLinter, gitleaks (full history), e2e                     |
 | `.github/` (others)            | CodeQL and OpenSSF Scorecard workflows, Dependabot config    |
 | `CONTRIBUTING.md`, `README.md` | Rules for contributors; README "Features" list               |
+| `.github/…/release.yml`        | Tag `vX.Y.Z` → zip, provenance attestation, release, AMO     |
+| `RELEASING.md`                 | Release steps and the owner's one-time AMO setup             |
 
 ## Workflow
 
