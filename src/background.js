@@ -10,6 +10,15 @@ function setBadge(text, color = "#d33", title = "Gotify") {
   browser.action.setTitle({ title });
 }
 
+// Read-modify-write sections of lastReadId / lastNotifiedId run one at a time, so a
+// markRead from the popup and the end of a poll cannot overwrite each other.
+let stateLock = Promise.resolve();
+function withState(fn) {
+  const run = stateLock.then(fn);
+  stateLock = run.catch(() => {});
+  return run;
+}
+
 // One poll at a time; a request arriving during a poll (markRead, new settings) runs
 // one more poll afterwards, so the result always reflects the latest stored state.
 let running = null;
@@ -40,12 +49,15 @@ async function doPoll() {
     const n = messages.length;
     setBadge(n ? (complete ? String(n) : "999+") : "", "#d33", `Gotify: ${n}${complete ? "" : "+"} unread`);
 
-    const fresh = messages.filter((m) => m.id > (lastNotifiedId ?? 0)).reverse(); // oldest first
-    if (fresh.length) {
+    // lastNotifiedId re-read now: the popup may have marked messages read meanwhile
+    const fresh = await withState(async () => {
+      const { lastNotifiedId: now = 0 } = await browser.storage.local.get("lastNotifiedId");
+      const out = messages.filter((m) => m.id > Math.max(lastNotifiedId ?? 0, now)).reverse(); // oldest first
       // saved first: an unload in between loses a notification rather than repeating it
-      await browser.storage.local.set({ lastNotifiedId: fresh[fresh.length - 1].id });
-      await notify(cfg, fresh);
-    }
+      if (out.length) await browser.storage.local.set({ lastNotifiedId: Math.max(now, out.at(-1).id) });
+      return out;
+    });
+    if (fresh.length) await notify(cfg, fresh);
   } catch (e) {
     setBadge("err", "#888", `Gotify: ${e.message}`);
   }
@@ -64,7 +76,8 @@ function clickUrl(m) {
 // be shown as the icon.
 async function notify(cfg, fresh) {
   const shown = fresh.length > MAX_NOTIFICATIONS ? [] : fresh;
-  const apps = shown.length ? await api(cfg, "/application").catch(() => []) : [];
+  const answer = shown.length ? await api(cfg, "/application").catch(() => []) : [];
+  const apps = Array.isArray(answer) ? answer : [];
   const icon = async (m) => {
     const url = bigImageUrl(m) ?? appImageUrl(cfg, apps.find((a) => a.id === m.appid));
     return url ? imageSrc(cfg, url).catch(() => "icons/bell-96.png") : "icons/bell-96.png";
@@ -75,7 +88,7 @@ async function notify(cfg, fresh) {
     browser.notifications.create(`gotify-${m.id}`, {
       type: "basic",
       iconUrl: await icon(m),
-      title: m.title || "Gotify",
+      title: String(m.title ?? "").slice(0, 200) || "Gotify",
       message: String(m.message ?? "").slice(0, 500),
     });
   }
@@ -99,9 +112,11 @@ browser.notifications.onClicked.addListener(async (id) => {
 browser.notifications.onClosed.addListener((id) => browser.storage.session.remove(id));
 
 browser.runtime.onMessage.addListener(async (msg) => {
-  if (msg?.type === "markRead") {
-    const { lastReadId = 0, lastNotifiedId = 0 } = await browser.storage.local.get(["lastReadId", "lastNotifiedId"]);
-    await browser.storage.local.set({ lastReadId: Math.max(lastReadId, msg.id), lastNotifiedId: Math.max(lastNotifiedId, msg.id) });
+  if (msg?.type === "markRead" && Number.isSafeInteger(msg.id)) {
+    await withState(async () => {
+      const { lastReadId = 0, lastNotifiedId = 0 } = await browser.storage.local.get(["lastReadId", "lastNotifiedId"]);
+      await browser.storage.local.set({ lastReadId: Math.max(lastReadId, msg.id), lastNotifiedId: Math.max(lastNotifiedId, msg.id) });
+    });
   }
   if (msg?.type === "settings") return schedule();
   if (msg?.type === "markRead" || msg?.type === "poll") await poll();

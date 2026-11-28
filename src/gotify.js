@@ -20,9 +20,12 @@ async function getConfig() {
 
 // An http(s) URL taken from server data (message text, extras), or null: anything
 // else (javascript:, data:, file:, moz-extension:…) is never opened nor turned into a link.
+// URLs with credentials are refused too: "https://bank.example@evil.example/" reads as
+// the bank but opens evil.example.
 function safeHttpUrl(raw) {
   try {
     const u = new URL(raw);
+    if (u.username || u.password) return null;
     return u.protocol === "https:" || u.protocol === "http:" ? u.href : null;
   } catch {
     return null;
@@ -46,22 +49,29 @@ function bigImageUrl(m) {
 // images on the server itself (reachable with the host permission) are downloaded
 // (no token: Gotify serves them publicly) and handed over as a data: URL. Images on
 // other hosts are left to load directly, which works over https.
+// Bounded: at most MAX_IMAGE_BYTES per image, MAX_CACHED_IMAGES kept.
+const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+const MAX_CACHED_IMAGES = 100;
 const imageCache = new Map();
+async function downloadImage(url) {
+  const res = await fetch(url, { credentials: "omit", redirect: "error", signal: AbortSignal.timeout(15000) });
+  if (!res.ok || !res.headers.get("content-type")?.startsWith("image/")) throw new Error(`${url}: not an image`);
+  if (Number(res.headers.get("content-length")) > MAX_IMAGE_BYTES) throw new Error(`${url}: image too large`);
+  const blob = await res.blob();
+  if (blob.size > MAX_IMAGE_BYTES) throw new Error(`${url}: image too large`);
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
 function imageSrc(cfg, url) {
   if (new URL(url).origin !== new URL(cfg.url).origin) return Promise.resolve(url);
-  if (!imageCache.has(url)) imageCache.set(url, (async () => {
-    const res = await fetch(url, {
-      credentials: "omit", redirect: "error", signal: AbortSignal.timeout(15000),
-    });
-    if (!res.ok || !res.headers.get("content-type")?.startsWith("image/")) throw new Error(`${url}: not an image`);
-    const blob = await res.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(reader.error);
-      reader.readAsDataURL(blob);
-    });
-  })().catch((e) => { imageCache.delete(url); throw e; }));
+  if (!imageCache.has(url)) {
+    if (imageCache.size >= MAX_CACHED_IMAGES) imageCache.delete(imageCache.keys().next().value); // oldest
+    imageCache.set(url, downloadImage(url).catch((e) => { imageCache.delete(url); throw e; }));
+  }
   return imageCache.get(url);
 }
 
@@ -73,14 +83,19 @@ const CLOSERS = { ")": "(", "]": "[", "}": "{" };
 
 // Drops sentence punctuation glued to a URL, and a closing bracket only when it has no
 // opening one inside the URL: "(see https://x.org/a)" vs "https://x.org/Foo_(bar)".
+// Linear: brackets are counted once (a message of 200k ")" must not freeze the popup).
 function trimUrl(raw) {
-  for (;;) {
-    const ch = raw.at(-1);
+  const count = {};
+  for (const ch of raw) if (ch in CLOSERS || "([{".includes(ch)) count[ch] = (count[ch] ?? 0) + 1;
+  let end = raw.length;
+  while (end > 0) {
+    const ch = raw[end - 1];
     const open = CLOSERS[ch];
-    if (".,;:!?".includes(ch)) raw = raw.slice(0, -1);
-    else if (open && raw.split(open).length <= raw.split(ch).length - 1) raw = raw.slice(0, -1);
-    else return raw;
+    if (".,;:!?".includes(ch)) end--;
+    else if (open && (count[open] ?? 0) < count[ch]) { count[ch]--; end--; }
+    else break;
   }
+  return raw.slice(0, end);
 }
 
 function linkify(text, onOpen) {

@@ -45,12 +45,46 @@ test("safeHttpUrl: null or an http(s) URL, never throws", () => {
   }), { numRuns: 5000 });
 });
 
+test("safeHttpUrl: URLs with credentials are refused (\"https://bank@evil/\" opens evil)", () => {
+  fc.assert(fc.property(fc.webUrl({ authoritySettings: { withUserInfo: true } }), (raw) => {
+    const u = safeHttpUrl(raw);
+    assert.ok(u === null || (!new URL(u).username && !new URL(u).password), u);
+  }), { numRuns: 3000 });
+  assert.equal(safeHttpUrl("https://bank.example@evil.example/"), null);
+  assert.equal(safeHttpUrl("https://user:pass@a.org/"), null);
+});
+
 test("safeHttpUrl: other schemes are refused whatever follows", () => {
   // eslint-disable-next-line no-script-url -- hostile input under test, never run
   const scheme = fc.constantFrom("javascript:", "data:", "file:", "blob:", "moz-extension:", "about:", "ftp:", "vbscript:");
   fc.assert(fc.property(scheme, anyText, (s, rest) => {
     assert.equal(safeHttpUrl(s + rest), null);
   }), { numRuns: 3000 });
+});
+
+// The first, quadratic version of trimUrl: the reference the linear one must match.
+function trimUrlReference(raw) {
+  const closers = { ")": "(", "]": "[", "}": "{" };
+  for (;;) {
+    const ch = raw.at(-1);
+    const open = closers[ch];
+    if (".,;:!?".includes(ch)) raw = raw.slice(0, -1);
+    else if (open && raw.split(open).length <= raw.split(ch).length - 1) raw = raw.slice(0, -1);
+    else return raw;
+  }
+}
+
+test("trimUrl: same result as the reference version, on bracket-heavy input", () => {
+  const brackety = fc.string({ unit: fc.constantFrom("(", ")", "[", "]", "{", "}", ".", ",", "!", "a", "/"), maxLength: 60 });
+  fc.assert(fc.property(fc.oneof(brackety, anyText, fc.webUrl()), (raw) => {
+    assert.equal(trimUrl(raw), trimUrlReference(raw));
+  }), { numRuns: 5000 });
+});
+
+test("trimUrl: linear time, a message of 200k closing brackets does not freeze the popup", () => {
+  const start = performance.now();
+  assert.equal(trimUrl("https://a/" + ")".repeat(200000)), "https://a/");
+  assert.ok(performance.now() - start < 500, `${performance.now() - start} ms`);
 });
 
 test("trimUrl: a prefix, idempotent, no trailing sentence punctuation", () => {

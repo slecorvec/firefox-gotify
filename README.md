@@ -55,8 +55,11 @@ them as untrusted.
 
 - Message title and body are rendered as **text only**: no HTML, no Markdown rendering,
   no `innerHTML` (an ESLint rule forbids the HTML-parsing DOM APIs in the code).
-- Only `http:` / `https:` URLs become links or notification targets — `javascript:`,
-  `data:`, `file:`… are left as plain text. Links carry `rel="noopener noreferrer"`.
+- Only `http:` / `https:` URLs without credentials become links or notification
+  targets — `javascript:`, `data:`, `file:`, `https://bank@evil/`… are left as plain
+  text. Links carry `rel="noopener noreferrer"` and are bidi-isolated.
+- Bounded work whatever a message holds: linear link detection, titles and bodies cut
+  in the popup, image downloads capped at 2 MB.
 - Strict Content-Security-Policy on the extension pages: scripts and styles from the
   extension only, no inline code, no remote code. Images: the extension's own, your
   server's (downloaded, shown as `data:` URLs) and pictures attached to messages from
@@ -71,7 +74,11 @@ them as untrusted.
 - No dependency at runtime, no build step: the published code is the code in `src/`.
 - Nothing leaves your browser except the requests to your own Gotify server, and the
   download of the pictures your applications attach to their messages, from the host
-  they point to (e.g. TMDB for Radarr posters): that host sees your IP address.
+  they point to (e.g. TMDB for Radarr posters): that host sees your IP address, and,
+  as the picture is the notification icon, when the message arrives.
+
+Security review: [docs/security-review.md](docs/security-review.md) (threat model,
+findings, fixes).
 
 Reporting a vulnerability: see [SECURITY.md](SECURITY.md).
 
