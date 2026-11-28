@@ -11,8 +11,8 @@
     "build": "web-ext build --source-dir src --artifacts-dir dist --overwrite-dest"
   },
   "devDependencies": {
-    "fast-check": "4.10.0",
-    "selenium-webdriver": "4.53.0",
+    "fast-check": "4.11.0",
+    "selenium-webdriver": "4.54.0",
     "web-ext": "10.8.0"
   }
 }
