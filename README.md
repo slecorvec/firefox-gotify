@@ -36,6 +36,9 @@ e2e-tested)*.
   by application, with each application's unread count. The filter resets at each
   opening: opening marks every application read, a remembered filter would hide the
   others' new messages.
+- **Delete messages** from the popup: one by one, or all at once (all those of the
+  filtered application when a filter is set), after a confirmation. Deletion happens on
+  the server: the messages are gone for every client, phone included.
 - **Clickable links**: http(s) URLs in a message open in a new tab; the link shows the
   normalised URL it opens (an internationalised host appears as punycode).
 
@@ -53,6 +56,10 @@ them as untrusted.
 - Host access is requested at runtime for **your server's host only** (no CORS
   setting needed on the Gotify side); the token is stored in the extension's local
   storage and sent to that server only.
+- Deleting needs one network rule: Firefox adds an `Origin: moz-extension://…` header
+  to the extension's DELETE requests, which Gotify's CORS filter refuses. A session rule
+  (`declarativeNetRequest`) removes that header from **this extension's own DELETE
+  requests to your server** only; nothing else is touched.
 - No dependency at runtime, no build step: the published code is the code in `src/`.
 - Nothing leaves your browser except the requests to your own Gotify server.
 

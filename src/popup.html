@@ -8,8 +8,16 @@
 <body class="popup">
   <header>
     <span id="summary">Gotify</span>
-    <a id="open" href="#">Open Gotify</a>
+    <span class="actions">
+      <button id="clear" type="button" hidden>Delete all</button>
+      <a id="open" href="#">Open Gotify</a>
+    </span>
   </header>
+  <div id="confirm" role="alertdialog" aria-labelledby="confirm-text" hidden>
+    <span id="confirm-text"></span>
+    <button id="confirm-yes" type="button">Delete</button>
+    <button id="confirm-no" type="button">Cancel</button>
+  </div>
   <select id="app" aria-label="Filter by application" hidden></select>
   <p id="status" role="status"></p>
   <ul id="list"></ul>

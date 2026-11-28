@@ -74,10 +74,12 @@ function originPattern(url) {
   return `${u.protocol}//${u.hostname}/*`;
 }
 
-// GET a Gotify API path with the client token in a header (never in the URL: query
-// strings end up in server and proxy access logs).
-async function api(cfg, path) {
+// Calls a Gotify API path (GET unless told otherwise) with the client token in a header
+// (never in the URL: query strings end up in server and proxy access logs). Returns the
+// JSON answer of a GET, nothing for other methods.
+async function api(cfg, path, method = "GET") {
   const res = await fetch(cfg.url + path, {
+    method,
     headers: { "X-Gotify-Key": cfg.token },
     cache: "no-store",
     credentials: "omit",
@@ -87,9 +89,30 @@ async function api(cfg, path) {
     throw new Error(`${path.split("?")[0]}: ${e.message} (server unreachable, or it redirects: use its final https URL)`);
   });
   if (!res.ok) throw new Error(`${path.split("?")[0]}: HTTP ${res.status}`);
+  if (method !== "GET") return undefined;
   if (!res.headers.get("content-type")?.includes("json"))
     throw new Error(`${path.split("?")[0]}: not a Gotify answer (login page of a proxy in front?)`);
   return res.json();
+}
+
+// Firefox adds "Origin: moz-extension://…" to the extension's non-GET requests, and
+// Gotify's CORS filter answers 403 to an origin it was not configured for. Dropping that
+// header (only on this extension's DELETE requests to the server's host) turns them into
+// plain non-CORS requests, which Gotify accepts: no CORS setting needed on the server.
+async function allowDeletes(cfg) {
+  await browser.declarativeNetRequest.updateSessionRules({
+    removeRuleIds: [1],
+    addRules: [{
+      id: 1,
+      action: { type: "modifyHeaders", requestHeaders: [{ header: "origin", operation: "remove" }] },
+      condition: {
+        requestDomains: [new URL(cfg.url).hostname],
+        initiatorDomains: [location.hostname], // this extension's own pages only
+        requestMethods: ["delete"],
+        resourceTypes: ["xmlhttprequest"],
+      },
+    }],
+  });
 }
 
 // Messages newer than afterId, newest first. Gotify pages backwards: ?since=<id>

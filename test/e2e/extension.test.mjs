@@ -229,3 +229,44 @@ test("more than 3 new messages at once: one summary notification", async () => {
   const shown = await ext("return Object.keys(await browser.notifications.getAll());");
   assert.ok(shown.includes("gotify-summary"), `notifications: ${shown}`);
 });
+
+test("popup: delete one message, every message of an application, or all of them", async () => {
+  const onServer = async (path = "/message") => (await gotify("GET", `${path}?limit=100`, { auth: client })).messages;
+  await openExt("popup.html");
+  await driver.wait(until.elementsLocated(By.css("#list li")), 15000);
+
+  const first = await driver.findElement(By.css("#list li"));
+  const id = Number(await first.getAttribute("data-id"));
+  await first.findElement(By.css("button.delete")).click();
+  await waitFor("message deleted on the server", async () => !(await onServer()).some((m) => m.id === id));
+  await waitFor("message removed from the list",
+    async () => (await driver.findElements(By.css(`#list li[data-id="${id}"]`))).length === 0);
+
+  // "Delete all" follows the filter, and asks first: Cancel deletes nothing
+  await driver.findElement(By.id("app")).findElement(By.css(`option[value="${apps.alerts.id}"]`)).click();
+  await driver.findElement(By.id("clear")).click();
+  assert.match(await driver.findElement(By.id("confirm-text")).getText(), /every message of alerts on the server/);
+  await driver.findElement(By.id("confirm-no")).click();
+  assert.ok(!(await driver.findElement(By.id("confirm")).isDisplayed()));
+  assert.ok((await onServer(`/application/${apps.alerts.id}/message`)).length > 0, "Cancel kept the messages");
+  await driver.findElement(By.id("clear")).click();
+  await driver.findElement(By.id("confirm-yes")).click();
+  await waitFor("alerts emptied on the server",
+    async () => (await onServer(`/application/${apps.alerts.id}/message`)).length === 0);
+  assert.ok((await onServer(`/application/${apps.backups.id}/message`)).length > 0, "other applications kept");
+  await waitFor("alerts removed from the list",
+    async () => (await driver.findElements(By.css(`#list li[data-app="${apps.alerts.id}"]`))).length === 0);
+
+  await driver.findElement(By.id("clear")).click();
+  assert.match(await driver.findElement(By.id("confirm-text")).getText(), /^Delete every message on the server\?$/);
+  await driver.findElement(By.id("confirm-yes")).click();
+  await waitFor("server emptied", async () => (await onServer()).length === 0);
+  await waitFor("list emptied", async () => (await driver.findElements(By.css("#list li"))).length === 0);
+  assert.equal(await driver.findElement(By.id("status")).getText(), "No message to show.");
+  await waitBadge("");
+
+  // the server is empty, the next message still counts as unread
+  await push("backups", "after deleting everything");
+  await pollNow();
+  await waitBadge("1");
+});
