@@ -1,0 +1,28 @@
+# release-please: Conventional Commit titles on master → release PR (CHANGELOG.md, version
+# in src/manifest.json); merging it tags vX.Y.Z and creates the GitHub release.
+# Signing and publishing on addons.mozilla.org stay a manual step of the owner.
+name: Release
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: release-please
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

@@ -9,3 +9,6 @@ Issues and pull requests are welcome.
   [`test/e2e/extension.test.mjs`](test/e2e/extension.test.mjs).
 - Run the end-to-end test before opening a pull request (command in the README); CI
   runs it again with MegaLinter and gitleaks.
+- Pull request title: [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+  (`feat: …`, `fix(popup): …`). Pull requests are squash-merged: the title becomes the
+  commit, and the changelog entry for `feat` and `fix`.
