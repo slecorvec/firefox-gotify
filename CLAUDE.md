@@ -16,6 +16,7 @@ on the web (cloud sessions); nothing here depends on any other infrastructure.
 | Path                           | Role                                                         |
 | ------------------------------ | ------------------------------------------------------------ |
 | `src/`                         | The extension as shipped: no dependency, no build step       |
+| `test/unit/`                   | Property-based tests (fast-check) of `src/gotify.js`, in Node |
 | `test/e2e/`                    | Throwaway Gotify server + headless Firefox ESR (geckodriver) |
 | `.github/workflows/ci.yml`     | MegaLinter, gitleaks (full history), e2e                     |
 | `.github/` (others)            | OpenSSF Scorecard workflow, Dependabot config                |
@@ -64,8 +65,8 @@ docker compose -f test/e2e/compose.yml up --build --abort-on-container-exit --ex
 docker compose -f test/e2e/compose.yml down -v
 ```
 
-`npm ci --ignore-scripts && npm run lint:ext` is the quick check (pinned web-ext); the e2e
-container runs it too.
+`npm ci --ignore-scripts && npm run lint:ext && npm run test:unit` is the quick check
+(pinned web-ext, fast-check property tests, about a second); the e2e container runs both.
 
 In a cloud session the e2e image does not build as is: start `dockerd` if
 `docker info` fails, and the build's `curl`/`npm` must trust the session proxy's CA.
