@@ -1,15 +1,12 @@
-<!-- markdownlint-disable-next-line MD041 -->
-> [!WARNING]
->
-> ## 🚧 WORK IN PROGRESS (WIP) 🚧
->
-> Not released yet: features, options and stored data may still change without notice.
-
 # Gotify Unread — Firefox extension
 
 [![CI](https://github.com/slecorvec/firefox-gotify/actions/workflows/ci.yml/badge.svg)](https://github.com/slecorvec/firefox-gotify/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/slecorvec/firefox-gotify/badge)](https://scorecard.dev/viewer/?uri=github.com/slecorvec/firefox-gotify)
 [![License: 0BSD](https://img.shields.io/badge/license-0BSD-blue.svg)](LICENSE)
+
+> [!NOTE]
+> Unofficial: this extension is not affiliated with, nor endorsed by, the
+> [Gotify](https://gotify.net) project.
 
 Firefox extension for [Gotify](https://gotify.net): an unread badge counting every
 message received since you last opened it — including those sent while the browser was
