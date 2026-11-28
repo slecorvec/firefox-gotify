@@ -1,9 +1,10 @@
 # Changelog
 
-Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow
-[Semantic Versioning](https://semver.org/).
+Written by [release-please](https://github.com/googleapis/release-please) from the
+Conventional Commit titles of merged pull requests; versions follow
+[Semantic Versioning](https://semver.org/). Do not edit by hand: fix the PR title instead.
 
-## 0.2.0 — unreleased
+## 0.2.0 — before release automation
 
 ### Added
 

@@ -18,3 +18,5 @@ FILEIO_REPORTER: false
 PRINT_ALPACA: false
 JAVASCRIPT_ES_CONFIG_FILE: eslint.config.mjs
 FILTER_REGEX_EXCLUDE: (node_modules/|package-lock\.json|megalinter-reports/)
+# Written by release-please (`*` bullets, repeated headings), not by hand.
+MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: CHANGELOG\.md
