@@ -72,7 +72,7 @@ function clickUrl(m) {
 }
 
 // Notification icon: the picture attached to the message, else its application's icon,
-// else the extension's bell. Firefox only has "basic" notifications: a picture can only
+// else the extension's icon. Firefox only has "basic" notifications: a picture can only
 // be shown as the icon.
 async function notify(cfg, fresh) {
   const shown = fresh.length > MAX_NOTIFICATIONS ? [] : fresh;
@@ -80,7 +80,7 @@ async function notify(cfg, fresh) {
   const apps = Array.isArray(answer) ? answer : [];
   const icon = async (m) => {
     const url = bigImageUrl(m) ?? appImageUrl(cfg, apps.find((a) => a.id === m.appid));
-    return url ? imageSrc(cfg, url).catch(() => "icons/bell-96.png") : "icons/bell-96.png";
+    return url ? imageSrc(cfg, url).catch(() => "icons/gotify-96.png") : "icons/gotify-96.png";
   };
   const targets = Object.fromEntries(shown.map((m) => [`gotify-${m.id}`, clickUrl(m)]).filter(([, u]) => u));
   if (Object.keys(targets).length) browser.storage.session.set(targets);
@@ -95,7 +95,7 @@ async function notify(cfg, fresh) {
   if (!shown.length) {
     browser.notifications.create("gotify-summary", {
       type: "basic",
-      iconUrl: "icons/bell-96.png",
+      iconUrl: "icons/gotify-96.png",
       title: "Gotify",
       message: `${fresh.length} new messages`,
     });

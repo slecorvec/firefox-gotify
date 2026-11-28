@@ -28,6 +28,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follo
 ### Changed
 
 - The extension's description says it is an unofficial Gotify client.
+- Icon: the Gotify logo (from github.com/gotify/logo, CC BY 4.0, credited in the
+  description and `src/icons/LICENSE.md`) replaces the bell.
 
 ## 0.1.0
 
