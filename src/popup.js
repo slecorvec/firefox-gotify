@@ -1,5 +1,5 @@
 // Shows the latest messages, unread ones highlighted, filterable by application, then
-// marks everything read.
+// marks everything read. Messages can be deleted on the server, one by one or all at once.
 "use strict";
 
 const SHOWN = 30;
@@ -44,6 +44,61 @@ function applyFilter(selected) {
   for (const li of $("list").children) li.hidden = selected !== "" && li.dataset.app !== selected;
 }
 
+// Deletion happens on the server: the message is gone for every client of this user
+// (phone included), hence the confirmation before deleting more than one.
+function setupDelete(cfg, messages, lastReadId, appName) {
+  const refresh = () => {
+    const selected = $("app").value;
+    renderFilter(messages, lastReadId, appName);
+    $("app").value = [...$("app").options].some((o) => o.value === selected) ? selected : "";
+    applyFilter($("app").value);
+    $("clear").hidden = !messages.length;
+    if (!messages.length) $("status").textContent = "No message to show.";
+    browser.runtime.sendMessage({ type: "poll" }); // badge without the deleted messages
+  };
+  const drop = (keep) => {
+    for (const m of messages.filter((x) => !keep(x))) {
+      $("list").querySelector(`li[data-id="${m.id}"]`)?.remove();
+      browser.notifications.clear(`gotify-${m.id}`);
+    }
+    messages.splice(0, messages.length, ...messages.filter(keep));
+    refresh();
+  };
+  const fail = (e) => { $("status").textContent = `Error: ${e.message}`; };
+  const ready = allowDeletes(cfg);
+
+  $("list").addEventListener("click", async (ev) => {
+    const li = ev.target.closest("button.delete")?.closest("li");
+    if (!li) return;
+    const id = Number(li.dataset.id);
+    try {
+      await ready;
+      await api(cfg, `/message/${id}`, "DELETE");
+      drop((m) => m.id !== id);
+    } catch (e) { fail(e); }
+  });
+
+  $("clear").hidden = !messages.length;
+  $("clear").onclick = () => {
+    const app = $("app").value;
+    $("confirm-text").textContent = app
+      ? `Delete every message of ${appName(Number(app))} on the server?`
+      : "Delete every message on the server?";
+    $("confirm").hidden = false;
+    $("confirm-no").focus();
+  };
+  $("confirm-no").onclick = () => { $("confirm").hidden = true; };
+  $("confirm-yes").onclick = async () => {
+    $("confirm").hidden = true;
+    const app = $("app").value;
+    try {
+      await ready;
+      await api(cfg, app ? `/application/${app}/message` : "/message", "DELETE");
+      drop((m) => app !== "" && String(m.appid) !== app);
+    } catch (e) { fail(e); }
+  };
+}
+
 async function render() {
   const cfg = await getConfig();
   if (!cfg.url || !cfg.token) {
@@ -69,9 +124,14 @@ async function render() {
     for (const m of messages) {
       const li = el("li", m.id > lastReadId ? "unread" : "");
       li.dataset.app = String(m.appid);
+      li.dataset.id = String(m.id);
       const head = el("div", "head");
+      const del = el("button", "delete", "×");
+      del.type = "button";
+      del.title = "Delete this message";
+      del.setAttribute("aria-label", "Delete this message");
       head.append(el("span", "app", appName(m.appid)),
-                  el("time", "", new Date(m.date).toLocaleString()));
+                  el("time", "", new Date(m.date).toLocaleString()), del);
       li.append(head);
       if (m.title) li.append(el("div", "title", m.title));
       const body = el("div", "body");
@@ -80,7 +140,8 @@ async function render() {
       $("list").append(li);
     }
     renderFilter(messages, lastReadId, appName);
-    $("app").onchange = () => applyFilter($("app").value);
+    $("app").onchange = () => { $("confirm").hidden = true; applyFilter($("app").value); };
+    setupDelete(cfg, messages, lastReadId, appName);
     if (messages.length) browser.runtime.sendMessage({ type: "markRead", id: messages[0].id });
   } catch (e) {
     $("status").textContent = `Error: ${e.message}`;

@@ -4,7 +4,7 @@
   "version": "0.2.0",
   "description": "Gotify notifications, clickable links, a per-application filter and an unread badge counting every message since you last read them.",
   "icons": { "48": "icons/bell.svg", "96": "icons/bell.svg" },
-  "permissions": ["alarms", "notifications", "storage"],
+  "permissions": ["alarms", "declarativeNetRequestWithHostAccess", "notifications", "storage"],
   "optional_host_permissions": ["http://*/*", "https://*/*"],
   "background": { "scripts": ["gotify.js", "background.js"] },
   "action": { "default_icon": "icons/bell.svg", "default_title": "Gotify", "default_popup": "popup.html" },
