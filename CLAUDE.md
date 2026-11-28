@@ -16,7 +16,7 @@ on the web (cloud sessions); nothing here depends on any other infrastructure.
 | Path                           | Role                                                         |
 | ------------------------------ | ------------------------------------------------------------ |
 | `src/`                         | The extension as shipped: no dependency, no build step       |
-| `test/unit/`                   | Property-based tests (fast-check) of `src/gotify.js`, in Node |
+| `test/unit/`                   | Property tests (fast-check) of `src/gotify.js`, in Node      |
 | `test/e2e/`                    | Throwaway Gotify server + headless Firefox ESR (geckodriver) |
 | `.github/workflows/ci.yml`     | MegaLinter, gitleaks (full history), e2e                     |
 | `.github/` (others)            | OpenSSF Scorecard workflow, Dependabot config                |
