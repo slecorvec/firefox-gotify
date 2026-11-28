@@ -1,5 +1,5 @@
 # Test runner image: Node + Firefox ESR (Debian) + geckodriver (pinned, checksum-verified).
-FROM node:26-trixie-slim
+FROM node:26-trixie-slim@sha256:abe7e5a82b61a8ef67b315b85497c9e65173387ccf2f4a029248184b8e020be5
 
 ARG GECKODRIVER_VERSION=0.37.1
 ARG GECKODRIVER_SHA256=e815130ea95983e162ae91843b48d3a3ce991735635fce83a647afde21e09f7e

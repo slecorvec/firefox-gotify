@@ -18,7 +18,7 @@ on the web (cloud sessions); nothing here depends on any other infrastructure.
 | `src/`                         | The extension as shipped: no dependency, no build step       |
 | `test/e2e/`                    | Throwaway Gotify server + headless Firefox ESR (geckodriver) |
 | `.github/workflows/ci.yml`     | MegaLinter, gitleaks (full history), e2e                     |
-| `.github/` (others)            | OpenSSF Scorecard workflow, Dependabot config                |
+| `.github/` (others)            | CodeQL and OpenSSF Scorecard workflows, Dependabot config    |
 | `CONTRIBUTING.md`, `README.md` | Rules for contributors; README "Features" list               |
 
 ## Workflow
@@ -115,9 +115,9 @@ E2E gotchas (Firefox ESR, geckodriver, selenium-webdriver, headless):
   merges it on GitHub.
 - No secret in the repo or in the session. The addons.mozilla.org signing credentials
   stay out of reach of the agent (a release is the owner's action).
-- Workflows: actions pinned by commit SHA, minimal permissions (`permissions: {}` at the
-  top, except `scorecard.yml` which needs `read-all`), `persist-credentials: false`,
-  never `pull_request_target`.
+- Workflows: actions pinned by commit SHA, container images by digest, minimal
+  permissions (`permissions: {}` at the top, except `scorecard.yml` which needs
+  `read-all`), `persist-credentials: false`, never `pull_request_target`.
 
 ## Self-review
 
