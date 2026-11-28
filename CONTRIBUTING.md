@@ -1,6 +1,8 @@
 # Contributing
 
-Issues and pull requests are welcome.
+Issues and pull requests are welcome. Everyone taking part follows the
+[code of conduct](CODE_OF_CONDUCT.md); security issues are reported privately, as
+described in [SECURITY.md](SECURITY.md).
 
 - Keep the extension dependency-free and build-free: `src/` is what ships.
 - Message content is untrusted: build the DOM with `textContent` and elements, never
