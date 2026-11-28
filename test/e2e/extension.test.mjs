@@ -162,7 +162,7 @@ test("popup: unread messages since the last opening, safe text, clickable links"
   assert.equal(await driver.findElement(By.id("summary")).getText(), "3 unread");
 
   // message content is text: the HTML payload is displayed, never parsed
-  assert.equal((await driver.findElements(By.css("#list img, #list b, #list script"))).length, 0);
+  assert.equal((await driver.findElements(By.css("#list .title *, #list .body :not(a)"))).length, 0);
   const body = await driver.findElement(By.xpath("//li[.//div[@class='title' and text()='Nightly backup']]//div[@class='body']"));
   assert.match(await body.getText(), /<b>bold<\/b><img src=x onerror=alert\(1\)>/);
 
@@ -269,4 +269,36 @@ test("popup: delete one message, every message of an application, or all of them
   await push("backups", "after deleting everything");
   await pollNow();
   await waitBadge("1");
+});
+
+test("images: application icons, and the picture attached to a message", async () => {
+  // Gotify's icon for an application without one, on the (plain http) server: handed over
+  // as a data: URL, Firefox would upgrade an http image to https
+  const icon = await fetch(`${GOTIFY}/static/defaultapp.png`)
+    .then(async (r) => `data:image/png;base64,${Buffer.from(await r.arrayBuffer()).toString("base64")}`);
+  // a picture on another host, like a Radarr poster: loaded directly (works over https,
+  // which this test server lacks: only the URL handed over is checked)
+  const poster = "http://images/static/defaultapp.png";
+  const plain = await push("backups", "no picture");
+  const radarr = await push("alerts", "Movie downloaded", {
+    title: "Radarr", extras: { "client::notification": { bigImageUrl: poster } },
+  });
+  await pollNow();
+  const shown = await waitFor("notifications", async () => {
+    const all = await ext("return browser.notifications.getAll();");
+    return all[`gotify-${plain.id}`] && all[`gotify-${radarr.id}`] && all;
+  });
+  assert.equal(shown[`gotify-${plain.id}`].iconUrl, icon, "the application icon");
+  assert.equal(shown[`gotify-${radarr.id}`].iconUrl, poster, "the attached picture first");
+
+  await openExt("popup.html");
+  await driver.wait(until.elementsLocated(By.css("#list li")), 15000);
+  const loaded = (img) => driver.executeScript("return arguments[0].complete && arguments[0].naturalWidth > 0;", img);
+  const icons = await driver.findElements(By.css("#list li .app-icon"));
+  assert.equal(icons.length, (await driver.findElements(By.css("#list li"))).length, "one icon per message");
+  await waitFor("application icon loaded (CSP allows it)", () => loaded(icons[0]));
+  assert.equal(await icons[0].getAttribute("src"), icon);
+  const pictures = await driver.findElements(By.css("#list li .picture"));
+  assert.equal(pictures.length, 1, "only the message with a picture has one");
+  await waitFor("picture URL set", async () => (await pictures[0].getAttribute("src")) === poster);
 });

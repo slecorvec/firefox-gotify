@@ -7,6 +7,9 @@ services:
     image: gotify/server:3.1.1
     environment:
       GOTIFY_DEFAULTUSER_PASS: e2e-admin # throwaway test server, never exposed
+    networks:
+      default:
+        aliases: [images] # a second host name, outside the extension's host permission
   e2e:
     build:
       context: ../..

@@ -1,10 +1,10 @@
 // ESLint flat config, self-contained (no plugin, no import): run by MegaLinter in CI.
 const browserGlobals = Object.fromEntries([
-  "browser", "document", "window", "location", "console", "fetch", "URL", "AbortSignal", "setTimeout", "clearTimeout",
+  "browser", "document", "window", "location", "console", "fetch", "URL", "AbortSignal", "FileReader", "setTimeout", "clearTimeout",
 ].map((g) => [g, "readonly"]));
 // src/gotify.js is a classic script shared by the other pages: its top-level names are globals there.
 const shared = Object.fromEntries([
-  "getConfig", "originPattern", "api", "allowDeletes", "messagesAfter", "latestId", "clampInterval", "safeHttpUrl", "linkify",
+  "getConfig", "originPattern", "api", "allowDeletes", "messagesAfter", "latestId", "clampInterval", "safeHttpUrl", "appImageUrl", "bigImageUrl", "imageSrc", "linkify",
 ].map((g) => [g, "readonly"]));
 const nodeGlobals = Object.fromEntries([
   "process", "Buffer", "console", "fetch", "setTimeout", "URL",

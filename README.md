@@ -39,6 +39,12 @@ e2e-tested)*.
 - **Delete messages** from the popup: one by one, or all at once (all those of the
   filtered application when a filter is set), after a confirmation. Deletion happens on
   the server: the messages are gone for every client, phone included.
+- **Images**: each message shows its application's icon; a picture attached by the
+  sender (`client::notification.bigImageUrl` extra, e.g. Radarr or Sonarr posters)
+  is shown under the message (from another host than your server: over https only,
+  Firefox upgrades http images on extension pages). In the desktop notification, the picture (else the
+  application icon) is the notification icon: Firefox notifications have no room for
+  a large image (the icon as displayed is *not e2e-tested*, only the URL given to it).
 - **Clickable links**: http(s) URLs in a message open in a new tab; the link shows the
   normalised URL it opens (an internationalised host appears as punycode).
 
@@ -52,7 +58,9 @@ them as untrusted.
 - Only `http:` / `https:` URLs become links or notification targets — `javascript:`,
   `data:`, `file:`… are left as plain text. Links carry `rel="noopener noreferrer"`.
 - Strict Content-Security-Policy on the extension pages: scripts and styles from the
-  extension only, no inline code, no remote code.
+  extension only, no inline code, no remote code. Images: the extension's own, your
+  server's (downloaded, shown as `data:` URLs) and pictures attached to messages from
+  any https URL, loaded without a referrer.
 - Host access is requested at runtime for **your server's host only** (no CORS
   setting needed on the Gotify side); the token is stored in the extension's local
   storage and sent to that server only.
@@ -61,7 +69,9 @@ them as untrusted.
   (`declarativeNetRequest`) removes that header from **this extension's own DELETE
   requests to your server** only; nothing else is touched.
 - No dependency at runtime, no build step: the published code is the code in `src/`.
-- Nothing leaves your browser except the requests to your own Gotify server.
+- Nothing leaves your browser except the requests to your own Gotify server, and the
+  download of the pictures your applications attach to their messages, from the host
+  they point to (e.g. TMDB for Radarr posters): that host sees your IP address.
 
 Reporting a vulnerability: see [SECURITY.md](SECURITY.md).
 

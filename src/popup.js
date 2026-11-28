@@ -12,6 +12,17 @@ function el(tag, cls, text) {
   return e;
 }
 
+// An <img> for an http(s) image URL, sending no referrer; hidden if it fails to load
+// rather than showing a broken image.
+function picture(cfg, cls, url) {
+  const img = el("img", cls);
+  img.alt = "";
+  img.referrerPolicy = "no-referrer";
+  img.addEventListener("error", () => { img.hidden = true; });
+  imageSrc(cfg, url).then((src) => { img.src = src; }, () => { img.hidden = true; });
+  return img;
+}
+
 function openTab(url) {
   browser.tabs.create({ url });
   window.close();
@@ -116,8 +127,8 @@ async function render() {
     // every unread message is shown before being marked read; read ones fill up to SHOWN
     const unread = unreadPage.messages;
     const messages = unread.length >= SHOWN ? unread : unread.concat(latest.messages.filter((m) => m.id <= lastReadId)).slice(0, SHOWN);
-    const names = new Map(apps.map((a) => [a.id, a.name]));
-    const appName = (id) => names.get(id) ?? `app ${id}`;
+    const byId = new Map(apps.map((a) => [a.id, a]));
+    const appName = (id) => byId.get(id)?.name ?? `app ${id}`;
     $("summary").textContent = unread.length ? `${unread.length}${unreadPage.complete ? "" : "+"} unread` : "No unread message";
     if (!messages.length) $("status").textContent = "No message on the server.";
 
@@ -130,6 +141,8 @@ async function render() {
       del.type = "button";
       del.title = "Delete this message";
       del.setAttribute("aria-label", "Delete this message");
+      const icon = appImageUrl(cfg, byId.get(m.appid));
+      if (icon) head.append(picture(cfg, "app-icon", icon));
       head.append(el("span", "app", appName(m.appid)),
                   el("time", "", new Date(m.date).toLocaleString()), del);
       li.append(head);
@@ -137,6 +150,8 @@ async function render() {
       const body = el("div", "body");
       body.append(linkify(String(m.message ?? ""), openTab));
       li.append(body);
+      const big = bigImageUrl(m);
+      if (big) li.append(picture(cfg, "picture", big));
       $("list").append(li);
     }
     renderFilter(messages, lastReadId, appName);

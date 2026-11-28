@@ -29,6 +29,42 @@ function safeHttpUrl(raw) {
   }
 }
 
+// An application's icon on the server (Gotify serves them without authentication).
+function appImageUrl(cfg, app) {
+  return typeof app?.image === "string" ? safeHttpUrl(`${cfg.url}/${app.image}`) : null;
+}
+
+// A picture the sender attached to a message (extras client::notification.bigImageUrl,
+// e.g. a Radarr or Sonarr poster), http(s) only. It may live on any host.
+function bigImageUrl(m) {
+  const raw = m.extras?.["client::notification"]?.bigImageUrl;
+  return typeof raw === "string" ? safeHttpUrl(raw) : null;
+}
+
+// An image as extension pages and notifications can show it. Firefox upgrades http
+// images to https on extension pages, which a plain-http Gotify server does not answer:
+// images on the server itself (reachable with the host permission) are downloaded
+// (no token: Gotify serves them publicly) and handed over as a data: URL. Images on
+// other hosts are left to load directly, which works over https.
+const imageCache = new Map();
+function imageSrc(cfg, url) {
+  if (new URL(url).origin !== new URL(cfg.url).origin) return Promise.resolve(url);
+  if (!imageCache.has(url)) imageCache.set(url, (async () => {
+    const res = await fetch(url, {
+      credentials: "omit", redirect: "error", signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok || !res.headers.get("content-type")?.startsWith("image/")) throw new Error(`${url}: not an image`);
+    const blob = await res.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(blob);
+    });
+  })().catch((e) => { imageCache.delete(url); throw e; }));
+  return imageCache.get(url);
+}
+
 // Message text → DOM nodes: text nodes, plus <a> for http(s) URLs. No HTML parsing
 // anywhere (no innerHTML, no markdown rendering): a message can only ever be text and
 // links. onOpen(url) is called on click; the anchor has no target of its own.
