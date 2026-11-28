@@ -78,7 +78,17 @@ docker buildx build --build-context ccr=/root/.ccr -f /tmp/Dockerfile.local \
   -t firefox-gotify-e2e-e2e --load .
 ```
 
-Docker Hub may answer `429 Too Many Requests`: retry `docker pull` after a short wait.
+Docker Hub limits anonymous pulls per IP, and cloud sessions share their outbound IP:
+expect `429 Too Many Requests`. When the environment defines `DOCKERHUB_USERNAME` and
+`DOCKERHUB_TOKEN` (a read-only Docker Hub access token), log in once `dockerd` is up,
+before building; the token goes through stdin, never on screen or in a command line:
+
+```sh
+[ -n "${DOCKERHUB_TOKEN:-}" ] &&
+  printf '%s' "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+```
+
+Without them, retry `docker pull` after a short wait.
 
 **Done criterion:** the PR's CI run (MegaLinter, gitleaks, e2e) is green; report its URL.
 
