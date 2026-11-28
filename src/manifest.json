@@ -9,7 +9,7 @@
   "background": { "scripts": ["gotify.js", "background.js"] },
   "action": { "default_icon": "icons/bell.svg", "default_title": "Gotify", "default_popup": "popup.html" },
   "content_security_policy": {
-    "extension_pages": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src http: https:; form-action 'none'; frame-ancestors 'none'; base-uri 'none'"
+    "extension_pages": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: https:; connect-src http: https:; form-action 'none'; frame-ancestors 'none'; base-uri 'none'"
   },
   "options_ui": { "page": "options.html", "open_in_tab": false },
   "browser_specific_settings": {

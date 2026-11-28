@@ -44,7 +44,7 @@ async function doPoll() {
     if (fresh.length) {
       // saved first: an unload in between loses a notification rather than repeating it
       await browser.storage.local.set({ lastNotifiedId: fresh[fresh.length - 1].id });
-      notify(fresh);
+      await notify(cfg, fresh);
     }
   } catch (e) {
     setBadge("err", "#888", `Gotify: ${e.message}`);
@@ -59,14 +59,22 @@ function clickUrl(m) {
   return typeof raw === "string" ? safeHttpUrl(raw) : null;
 }
 
-function notify(fresh) {
+// Notification icon: the picture attached to the message, else its application's icon,
+// else the extension's bell. Firefox only has "basic" notifications: a picture can only
+// be shown as the icon.
+async function notify(cfg, fresh) {
   const shown = fresh.length > MAX_NOTIFICATIONS ? [] : fresh;
+  const apps = shown.length ? await api(cfg, "/application").catch(() => []) : [];
+  const icon = async (m) => {
+    const url = bigImageUrl(m) ?? appImageUrl(cfg, apps.find((a) => a.id === m.appid));
+    return url ? imageSrc(cfg, url).catch(() => "icons/bell-96.png") : "icons/bell-96.png";
+  };
   const targets = Object.fromEntries(shown.map((m) => [`gotify-${m.id}`, clickUrl(m)]).filter(([, u]) => u));
   if (Object.keys(targets).length) browser.storage.session.set(targets);
   for (const m of shown) {
     browser.notifications.create(`gotify-${m.id}`, {
       type: "basic",
-      iconUrl: "icons/bell-96.png",
+      iconUrl: await icon(m),
       title: m.title || "Gotify",
       message: String(m.message ?? "").slice(0, 500),
     });
