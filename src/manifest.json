@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Gotify Unread",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "Unofficial Gotify client: notifications, clickable links, a per-application filter and an unread badge since you last read. Logo: github.com/gotify/logo (CC BY 4.0).",
   "icons": { "48": "icons/gotify.svg", "96": "icons/gotify.svg" },
   "permissions": ["alarms", "declarativeNetRequestWithHostAccess", "notifications", "storage"],
