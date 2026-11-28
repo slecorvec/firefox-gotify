@@ -1,6 +1,7 @@
 # Gotify Unread — Firefox extension
 
 [![CI](https://github.com/slecorvec/firefox-gotify/actions/workflows/ci.yml/badge.svg)](https://github.com/slecorvec/firefox-gotify/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/slecorvec/firefox-gotify/actions/workflows/codeql.yml/badge.svg)](https://github.com/slecorvec/firefox-gotify/actions/workflows/codeql.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/slecorvec/firefox-gotify/badge)](https://scorecard.dev/viewer/?uri=github.com/slecorvec/firefox-gotify)
 [![License: 0BSD](https://img.shields.io/badge/license-0BSD-blue.svg)](LICENSE)
 
@@ -98,8 +99,10 @@ CI ([`.github/workflows/`](.github/workflows/)) runs on every push to master and
 pull request:
 [MegaLinter](https://megalinter.io) (ESLint, Stylelint, HTMLHint, JSONLint, markdownlint,
 yamllint, actionlint, hadolint, secretlint, Trivy), [gitleaks](https://github.com/gitleaks/gitleaks)
-on the full history, and the end-to-end test. Actions are pinned by commit SHA;
-[OpenSSF Scorecard](https://scorecard.dev) grades the supply chain weekly.
+on the full history, the end-to-end test, and [CodeQL](https://codeql.github.com)
+(JavaScript and workflows, also weekly). Actions are pinned by commit SHA and container
+images by digest; [OpenSSF Scorecard](https://scorecard.dev) grades the supply chain
+weekly.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [CHANGELOG.md](CHANGELOG.md).
 
