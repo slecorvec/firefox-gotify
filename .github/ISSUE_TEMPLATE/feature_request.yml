@@ -1,0 +1,16 @@
+name: Feature request
+description: Something the extension should do.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What do you need, and why?
+      description: The problem first; a solution is welcome but optional.
+    validations:
+      required: true
+  - type: textarea
+    id: elsewhere
+    attributes:
+      label: Does another Gotify client do it?
+      description: The Android app, the web UI, another extension…

@@ -3,6 +3,10 @@
 "use strict";
 
 const SHOWN = 30;
+// Display limits: a message of megabytes must not bloat the popup (Gotify accepts them).
+const MAX_TITLE = 200;
+const MAX_BODY = 10000;
+const clip = (text, max) => (text.length > max ? `${text.slice(0, max)}… (truncated: open Gotify for the rest)` : text);
 const $ = (id) => document.getElementById(id);
 
 function el(tag, cls, text) {
@@ -57,7 +61,7 @@ function applyFilter(selected) {
 
 // Deletion happens on the server: the message is gone for every client of this user
 // (phone included), hence the confirmation before deleting more than one.
-function setupDelete(cfg, messages, lastReadId, appName) {
+function setupDelete(cfg, messages, items, lastReadId, appName) {
   const refresh = () => {
     const selected = $("app").value;
     renderFilter(messages, lastReadId, appName);
@@ -69,7 +73,7 @@ function setupDelete(cfg, messages, lastReadId, appName) {
   };
   const drop = (keep) => {
     for (const m of messages.filter((x) => !keep(x))) {
-      $("list").querySelector(`li[data-id="${m.id}"]`)?.remove();
+      items.get(m.id)?.remove();
       browser.notifications.clear(`gotify-${m.id}`);
     }
     messages.splice(0, messages.length, ...messages.filter(keep));
@@ -132,8 +136,10 @@ async function render() {
     $("summary").textContent = unread.length ? `${unread.length}${unreadPage.complete ? "" : "+"} unread` : "No unread message";
     if (!messages.length) $("status").textContent = "No message on the server.";
 
+    const items = new Map(); // message id → its <li>
     for (const m of messages) {
       const li = el("li", m.id > lastReadId ? "unread" : "");
+      items.set(m.id, li);
       li.dataset.app = String(m.appid);
       li.dataset.id = String(m.id);
       const head = el("div", "head");
@@ -146,9 +152,9 @@ async function render() {
       head.append(el("span", "app", appName(m.appid)),
                   el("time", "", new Date(m.date).toLocaleString()), del);
       li.append(head);
-      if (m.title) li.append(el("div", "title", m.title));
+      if (m.title) li.append(el("div", "title", clip(String(m.title), MAX_TITLE)));
       const body = el("div", "body");
-      body.append(linkify(String(m.message ?? ""), openTab));
+      body.append(linkify(clip(String(m.message ?? ""), MAX_BODY), openTab));
       li.append(body);
       const big = bigImageUrl(m);
       if (big) li.append(picture(cfg, "picture", big));
@@ -156,7 +162,7 @@ async function render() {
     }
     renderFilter(messages, lastReadId, appName);
     $("app").onchange = () => { $("confirm").hidden = true; applyFilter($("app").value); };
-    setupDelete(cfg, messages, lastReadId, appName);
+    setupDelete(cfg, messages, items, lastReadId, appName);
     if (messages.length) browser.runtime.sendMessage({ type: "markRead", id: messages[0].id });
   } catch (e) {
     $("status").textContent = `Error: ${e.message}`;

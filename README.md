@@ -1,6 +1,7 @@
 # Gotify Unread — Firefox extension
 
 [![CI](https://github.com/slecorvec/firefox-gotify/actions/workflows/ci.yml/badge.svg)](https://github.com/slecorvec/firefox-gotify/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/slecorvec/firefox-gotify/actions/workflows/codeql.yml/badge.svg)](https://github.com/slecorvec/firefox-gotify/actions/workflows/codeql.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/slecorvec/firefox-gotify/badge)](https://scorecard.dev/viewer/?uri=github.com/slecorvec/firefox-gotify)
 [![License: 0BSD](https://img.shields.io/badge/license-0BSD-blue.svg)](LICENSE)
 
@@ -57,8 +58,11 @@ them as untrusted.
 
 - Message title and body are rendered as **text only**: no HTML, no Markdown rendering,
   no `innerHTML` (an ESLint rule forbids the HTML-parsing DOM APIs in the code).
-- Only `http:` / `https:` URLs become links or notification targets — `javascript:`,
-  `data:`, `file:`… are left as plain text. Links carry `rel="noopener noreferrer"`.
+- Only `http:` / `https:` URLs without credentials become links or notification
+  targets — `javascript:`, `data:`, `file:`, `https://bank@evil/`… are left as plain
+  text. Links carry `rel="noopener noreferrer"` and are bidi-isolated.
+- Bounded work whatever a message holds: linear link detection, titles and bodies cut
+  in the popup, image downloads capped at 2 MB.
 - Strict Content-Security-Policy on the extension pages: scripts and styles from the
   extension only, no inline code, no remote code. Images: the extension's own, your
   server's (downloaded, shown as `data:` URLs) and pictures attached to messages from
@@ -73,9 +77,19 @@ them as untrusted.
 - No dependency at runtime, no build step: the published code is the code in `src/`.
 - Nothing leaves your browser except the requests to your own Gotify server, and the
   download of the pictures your applications attach to their messages, from the host
-  they point to (e.g. TMDB for Radarr posters): that host sees your IP address.
+  they point to (e.g. TMDB for Radarr posters): that host sees your IP address, and,
+  as the picture is the notification icon, when the message arrives.
+
+Security review: [docs/security-review.md](docs/security-review.md) (threat model,
+findings, fixes).
 
 Reporting a vulnerability: see [SECURITY.md](SECURITY.md).
+
+## Install
+
+Releases: [GitHub releases](https://github.com/slecorvec/firefox-gotify/releases) (zip
+with a verifiable build provenance, see [RELEASING.md](RELEASING.md)), and soon
+addons.mozilla.org for a signed, auto-updating install.
 
 ## Install (development)
 
@@ -91,19 +105,30 @@ Reporting a vulnerability: see [SECURITY.md](SECURITY.md).
 The extension is plain JavaScript (Manifest V3, Firefox ≥ 140) with no build step.
 
 ```sh
-# web-ext lint + end-to-end test: Gotify server + headless Firefox ESR, in Docker
+# web-ext lint, property tests, end-to-end test: Gotify server + headless Firefox ESR, in Docker
 docker compose -f test/e2e/compose.yml up --build --abort-on-container-exit --exit-code-from e2e
 docker compose -f test/e2e/compose.yml down -v
 ```
+
+The property-based tests ([fast-check](https://fast-check.dev)) also run alone, in about
+a second: `npm ci --ignore-scripts && npm run test:unit`. They feed thousands of
+generated messages, URLs and extras to the code that turns server data into links and
+requests.
 
 CI ([`.github/workflows/`](.github/workflows/)) runs on every push to master and every
 pull request:
 [MegaLinter](https://megalinter.io) (ESLint, Stylelint, HTMLHint, JSONLint, markdownlint,
 yamllint, actionlint, hadolint, secretlint, Trivy), [gitleaks](https://github.com/gitleaks/gitleaks)
-on the full history, and the end-to-end test. Actions are pinned by commit SHA;
-[OpenSSF Scorecard](https://scorecard.dev) grades the supply chain weekly.
+on the full history, the end-to-end test, and [CodeQL](https://codeql.github.com)
+(JavaScript and workflows, also weekly). Actions are pinned by commit SHA and container
+images by digest; [OpenSSF Scorecard](https://scorecard.dev) grades the supply chain
+weekly.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [CHANGELOG.md](CHANGELOG.md).
+
+Dependencies (development tools and test images only) are updated by Dependabot every
+week. Minor and patch updates of npm packages and Docker images merge by themselves
+once CI is green; GitHub Actions and major updates wait for a review.
 
 ## License
 

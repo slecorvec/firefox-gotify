@@ -1,13 +1,22 @@
 version: 2
+# Minor and patch updates of npm and Docker dependencies merge by themselves once CI is
+# green (dependabot-automerge.yml); GitHub Actions and major updates wait for review.
 updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
+    groups:
+      dev-dependencies:
+        patterns: ["*"]
+        update-types: [minor, patch]
   - package-ecosystem: docker
     directory: /test/e2e
     schedule:

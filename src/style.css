@@ -34,6 +34,8 @@ li.unread {
 
 .body a {
   color: var(--accent);
+  direction: ltr;
+  unicode-bidi: isolate; /* a right-to-left override in the message cannot reverse the link */
 }
 
 .popup {
